@@ -1,5 +1,7 @@
 package com.renzotimtan.ops_analytics.service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,7 +23,11 @@ public class AnalyticsService {
     private final ConcurrentHashMap<String, Long> productSales = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Double> customerSpending = new ConcurrentHashMap<>();
 
+    private final AnalyticsSnapshotRepository snapshotRepository;
+
     public AnalyticsService(AnalyticsSnapshotRepository snapshotRepository) {
+        this.snapshotRepository = snapshotRepository;
+
         snapshotRepository.findTopByOrderByTimestampDesc().ifPresent(snapshot -> {
             totalOrders.set(snapshot.getTotalOrders());
             totalRevenue.set(snapshot.getTotalRevenue());
@@ -101,5 +107,27 @@ public class AnalyticsService {
         }
 
         return topProducts;
+    }
+
+    // Average # of Order per Day
+    public double getAverageOrdersPerDay() {
+
+        long totalOrderCount = getTotalOrders();
+        if (totalOrderCount == 0) {
+            return 0.0;
+        }
+    
+        // Find the first order date from snapshots or orders
+        LocalDate firstOrderDate = snapshotRepository.findFirstByOrderByTimestampAsc()
+            .map(snapshot -> snapshot.getTimestamp().toLocalDate())
+            .orElse(LocalDate.now()); // Default to today if no snapshot exists
+    
+        // Calculate days since first order
+        long daysSinceFirstOrder = ChronoUnit.DAYS.between(firstOrderDate, LocalDate.now());
+        if (daysSinceFirstOrder == 0) {
+            return totalOrderCount;
+        }
+    
+        return (double) totalOrderCount / daysSinceFirstOrder;
     }
 }

@@ -24,10 +24,13 @@ public class AnalyticsController {
     @GetMapping("/summary")
     public ResponseEntity<Map<String, Object>> getSummary() {
         Map<String, Object> response = new HashMap<>();
+
+        response.put("averageOrdersPerDay", analyticsService.getAverageOrdersPerDay());
+        response.put("averageOrderValue", analyticsService.getAverageOrderValue());
         response.put("totalOrders", analyticsService.getTotalOrders());
         response.put("totalRevenue", analyticsService.getTotalRevenue());
-        response.put("averageOrderValue", analyticsService.getAverageOrderValue());
-
+        response.put("totalrevenuePerProduct", analyticsService.getTopProducts(Integer.MAX_VALUE));
+        
         return ResponseEntity.ok(response);
     }
 

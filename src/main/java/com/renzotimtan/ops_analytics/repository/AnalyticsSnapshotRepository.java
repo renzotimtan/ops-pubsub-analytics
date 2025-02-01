@@ -12,4 +12,5 @@ public interface AnalyticsSnapshotRepository extends MongoRepository<AnalyticsSn
     
     // Find the most recent snapshot by timestamp (MongoDB sorts by descending order)
     Optional<AnalyticsSnapshot> findTopByOrderByTimestampDesc();
+    Optional<AnalyticsSnapshot> findFirstByOrderByTimestampAsc();
 }
